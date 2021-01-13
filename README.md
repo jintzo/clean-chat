@@ -30,3 +30,12 @@ Commands are prefixed with `?!`.
 * `?! list`: lists blocked words
 * `?! add`: add word to blocklist
 * `?! remove`: remove word from blocklist
+
+## Build it yourself
+
+This is barely more than the default starter from Forge, so following the [default instructions](https://mcforge.readthedocs.io/en/latest/gettingstarted/#from-zero-to-modding) should be enough:
+
+* clone the code
+* `./gradlew.bat genIntellijRuns` (or the eclipse equivalent, see page above)
+* `./gradlew.bat build` generates a jar file in `build/libs`
+* copy the file to your `mods` directory
