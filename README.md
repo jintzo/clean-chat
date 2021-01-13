@@ -1,6 +1,6 @@
 # nice-chat
 
-This is a very minimal mod that allows you to blacklist certain words from chat.
+This is a very minimal mod that allows you to block certain words from chat.
 
 ## Use-Cases
 
@@ -21,3 +21,12 @@ This is currently intended for 1.12.2.
 * Set up [Forge](http://files.minecraftforge.net/).
 * Go to the Releases page and download the jar (or compile it yourself if you don't trust me, you know the drill)
 * Put it in the mods folder
+
+## Usage
+
+Commands are prefixed with `?!`.
+
+* `?!`: lists available commands
+* `?! list`: lists blocked words
+* `?! add`: add word to blocklist
+* `?! remove`: remove word from blocklist
