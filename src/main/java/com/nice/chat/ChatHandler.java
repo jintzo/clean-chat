@@ -24,7 +24,7 @@ public class ChatHandler {
         logger.info("new external message: " + message);
 
         // if it contains a blocked string, cancel it
-        if(settingsHandler.currentSettings.stream().anyMatch(message::contains)) {
+        if(settingsHandler.currentSettings.stream().anyMatch(string -> message.toLowerCase().contains(string.toLowerCase()))) {
             logger.info("cancelled message: " + message);
             event.setCanceled(true);
         }
