@@ -1,4 +1,4 @@
-package com.nice.chat;
+package com.jintzo.nicechat;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;

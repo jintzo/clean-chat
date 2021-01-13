@@ -1,4 +1,4 @@
-package com.nice.chat;
+package com.jintzo.nicechat;
 
 import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.Logger;

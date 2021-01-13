@@ -1,4 +1,4 @@
-package com.nice.chat;
+package com.jintzo.nicechat;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
