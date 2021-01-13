@@ -1,0 +1,15 @@
+[
+{
+  "modid": "nicechat",
+  "name": "Nice Chat",
+  "description": "Client-side chat filtering",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["jintzo"],
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
