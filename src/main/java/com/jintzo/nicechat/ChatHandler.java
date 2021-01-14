@@ -3,8 +3,8 @@ package com.jintzo.nicechat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
-import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import org.apache.logging.log4j.Logger;
@@ -12,6 +12,8 @@ import org.apache.logging.log4j.Logger;
 public class ChatHandler {
     private final Logger logger;
     private final SettingsUtil settingsHandler;
+    private static final String prefix = "?!";
+    private EntityPlayer player;
 
     public ChatHandler(Logger newLogger) {
         logger = newLogger;
@@ -19,59 +21,96 @@ public class ChatHandler {
     }
 
     @SubscribeEvent
-    public void newExternalMessage(ServerChatEvent event) {
-        String message = event.getMessage();
-        logger.info("new external message: " + message);
-
-        // if it contains a blocked string, cancel it
-        if(settingsHandler.currentSettings.stream().anyMatch(string -> message.toLowerCase().contains(string.toLowerCase()))) {
-            logger.info("cancelled message: " + message);
+    public void newExternalMessage(ClientChatReceivedEvent event) {
+        // clean up string
+        String cleanedText = event.getMessage().getUnformattedText().toLowerCase().trim();
+        logger.error("handling external message: " + cleanedText);
+        boolean shouldBlock = settingsHandler.currentSettings.stream().anyMatch(string -> !string.trim().isEmpty() && cleanedText.contains(string.toLowerCase()));
+        if (shouldBlock) {
             event.setCanceled(true);
         }
     }
 
     /**
      * Handle messages sent by the user to modify the word list
+     * Handle external messages by applying the blacklist
      *
      * @param event event to be handled
      */
     @SubscribeEvent
-    public void newChatMessage(ClientChatReceivedEvent event) {
-
-        EntityPlayer player = Minecraft.getMinecraft().player;
-
-        final String prefix = "?!";
+    public void newChatMessage(ClientChatEvent event) {
+        player = Minecraft.getMinecraft().player;
 
         // extract text
-        String text = event.getMessage().getUnformattedText().replace("<" + Minecraft.getMinecraft().player.getName() + ">", "").trim();
+        String text = event.getMessage().trim().toLowerCase();
+        logger.error("got raw text " + text);
 
-        // only parse if the message starts with .chat, otherwise ignore
-        if (!text.startsWith(prefix)) {
-            logger.info("message not related");
-            return;
+        // only parse if the message starts with prefix, otherwise apply filter
+        if (text.startsWith(prefix)) {
+            // cancel message and start parsing
+            event.setCanceled(true);
+
+            handleCommand(text);
         }
+    }
 
-        // cancel message and start parsing
-        event.setCanceled(true);
+    /**
+     * Handle an external chat message.
+     * @param text text of the message
+     * @return whether or not this message should be blocked
+     */
+    private boolean handleExternal (String text) {
+        // clean up string
+        String cleanedText = text.toLowerCase().trim();
+        logger.error("handling external message: " + cleanedText);
+        return settingsHandler.currentSettings.stream().anyMatch(string -> !string.trim().isEmpty() && string.toLowerCase().contains(cleanedText));
+    }
 
-        // start by removing the prefix
-        text = text.replace(prefix, "").trim();
+    private void handleCommand (String command) {
+        // clean up command by removing the prefix if applicable
+        String text = command.replace(prefix, "").trim().toLowerCase();
+        logger.error("handling command " + text);
 
         // if empty, send help text
         if (text.isEmpty()) {
-            player.sendMessage(new TextComponentString("commands: list, add, remove"));
+            sendHelp();
         } else if (text.startsWith("list")) {
-            player.sendMessage(new TextComponentString("blocked strings: " + settingsHandler.currentSettings.toString()));
+            sendList();
         } else if (text.startsWith("add")) {
-            text = text.replace("add", "").trim();
-            logger.info("adding word to list: " + text);
-            player.sendMessage(new TextComponentString("added word: " + text));
-            settingsHandler.add(text);
+            handleAdd(text);
         } else if (text.startsWith("remove")) {
-            text = text.replace("remove", "").trim();
-            logger.info("removing word from list: " + text);
-            player.sendMessage(new TextComponentString("removed word: " + text));
-            settingsHandler.remove(text);
+            handleRemove(text);
         }
+    }
+
+    private void sendHelp () {
+        player.sendMessage(new TextComponentString("commands: list, add, remove"));
+    }
+
+    private void sendList () {
+        player.sendMessage(new TextComponentString("blocked strings: " + settingsHandler.currentSettings.toString()));
+    }
+
+    private void handleAdd (String command) {
+        // clean up
+        String text = command.replace("add", "").trim();
+
+        // only continue if string is not empty, otherwise filtering would be broken
+        if (text.isEmpty()) return;
+
+        // add word and inform the user
+        logger.info("adding word to list: " + text);
+        settingsHandler.add(text);
+        player.sendMessage(new TextComponentString("added word: " + text));
+    }
+
+    private void handleRemove (String command) {
+        // clean up
+        String text = command.replace("remove", "").trim();
+
+        // remove word and inform the user
+        logger.info("removing word from list: " + text);
+        settingsHandler.remove(text);
+        player.sendMessage(new TextComponentString("removed word: " + text));
     }
 }
